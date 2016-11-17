@@ -11,10 +11,10 @@ except ImportError:
     sys.exit(-1)
 
 print('Connecting...', end=' ')
-host = pyvix.Connect()
+host = pyvix.connect()
 print('OK')
 
-vms = host.Running()
+vms = host.running()
 if vms:
     print('Running virtual machines:')
     for vm in vms:
@@ -24,25 +24,25 @@ else:
     print('No running virtual machines')
 
 if len(sys.argv) > 1:
-    vm = host.Open(sys.argv[1])
+    vm = host.open(sys.argv[1])
 
     print(dir(vm))
     print()
 
-    print(vm.IsRunning())
+    print(vm.isrunning())
     print()
 
-    vm.WaitForTools()
-    vm.Login('user', 'password', pyvix.LOGIN_IN_GUEST_REQUIRE_INTERACTIVE_ENVIRONMENT)
+    vm.waitfortools()
+    vm.login('user', 'password', pyvix.LOGIN_IN_GUEST_REQUIRE_INTERACTIVE_ENVIRONMENT)
 
-    vm.Run('C:\\windows\\notepad.exe', '', False)
+    vm.run('C:\\windows\\notepad.exe', '', False)
 
-    tasklist = vm.TaskList()
+    tasklist = vm.tasklist()
     for task in tasklist:
         print('%d: %s: %s' % task)
 
-    vm.Logout()
+    vm.logout()
 
-    vm.Close()
+    vm.close()
 
-host.Disconnect()
+host.disconnect()
