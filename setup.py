@@ -34,7 +34,7 @@ setuptools.setup(
     author_email     = 'moertle@gmail.com',
     version          = '0.3',
     license          = 'MIT',
-    url              = 'http://oertle.org/pyvix',
+    url              = 'https://github.com/moertle/pyvix',
     description      = 'Python bindings for VIX library.',
     long_description = open('README.rst').read(),
     ext_modules = [
