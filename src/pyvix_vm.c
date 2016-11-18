@@ -1,5 +1,20 @@
 #include "pyvix.h"
 
+static int        PyVixVM_Type_init    ( PyVixVM * self, PyObject * args, PyObject * kwds );
+static void       PyVixVM_Type_dealloc ( PyVixVM * self );
+
+static PyObject * PyVixVM_Close        ( PyVixVM * self );
+static PyObject * PyVixVM_PowerOn      ( PyVixVM * self , PyObject * params );
+static PyObject * PyVixVM_PowerOff     ( PyVixVM * self , PyObject * params );
+static PyObject * PyVixVM_Reset        ( PyVixVM * self , PyObject * params );
+static PyObject * PyVixVM_WaitForTools ( PyVixVM * self , PyObject * params );
+static PyObject * PyVixVM_IsRunning    ( PyVixVM * self );
+static PyObject * PyVixVM_Login        ( PyVixVM * self , PyObject * params );
+static PyObject * PyVixVM_Logout       ( PyVixVM * self );
+static PyObject * PyVixVM_Run          ( PyVixVM * self , PyObject * params );
+static PyObject * PyVixVM_TaskList     ( PyVixVM * self );
+
+
 static PyMethodDef PyVixVM_methods[] = {
     {
         "close",        (PyCFunction)PyVixVM_Close,        METH_NOARGS,
@@ -84,23 +99,16 @@ PyTypeObject PyVixVM_Type = {
     0,                                // dictoffset
     (initproc)PyVixVM_Type_init,      // init
     0,                                // alloc
-    PyVixVM_Type_new,                 // new
+    PyType_GenericNew,                // new
 };
 
-///////////////////////////////////////////////////////////////////////////////
 
-PyObject * PyVixVM_Type_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
-    PyVixVM *self;
-    self = (PyVixVM *)type->tp_alloc(type, 0);
-    return (PyObject *)self;
-}
-
-int PyVixVM_Type_init(PyVixVM *self, PyObject *args, PyObject *kwds) {
+static int PyVixVM_Type_init(PyVixVM *self, PyObject *args, PyObject *kwds) {
     self->vm = VIX_INVALID_HANDLE;
     return 0;
 }
 
-void PyVixVM_Type_dealloc(PyVixVM *self) {
+static void PyVixVM_Type_dealloc(PyVixVM *self) {
     if(VIX_INVALID_HANDLE != self->vm) {
         Vix_ReleaseHandle(self->vm);
         self->vm = VIX_INVALID_HANDLE;
@@ -108,9 +116,7 @@ void PyVixVM_Type_dealloc(PyVixVM *self) {
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-PyObject * PyVixVM_Close(PyVixVM *self) {
+static PyObject * PyVixVM_Close(PyVixVM *self) {
     if(VIX_INVALID_HANDLE != self->vm) {
         Vix_ReleaseHandle(self->vm);
         self->vm = VIX_INVALID_HANDLE;
@@ -119,7 +125,7 @@ PyObject * PyVixVM_Close(PyVixVM *self) {
     Py_RETURN_NONE;
 }
 
-PyObject * PyVixVM_PowerOn(PyVixVM *self, PyObject *params) {
+static PyObject * PyVixVM_PowerOn(PyVixVM *self, PyObject *params) {
     VixHandle job;
     VixError error;
     int op;
@@ -154,7 +160,7 @@ PyObject * PyVixVM_PowerOn(PyVixVM *self, PyObject *params) {
     Py_RETURN_NONE;
 }
 
-PyObject * PyVixVM_PowerOff(PyVixVM *self, PyObject *params) {
+static PyObject * PyVixVM_PowerOff(PyVixVM *self, PyObject *params) {
     VixHandle job;
     VixError error;
     int op;
@@ -188,7 +194,7 @@ PyObject * PyVixVM_PowerOff(PyVixVM *self, PyObject *params) {
     Py_RETURN_NONE;
 }
 
-PyObject * PyVixVM_Reset(PyVixVM *self, PyObject *params) {
+static PyObject * PyVixVM_Reset(PyVixVM *self, PyObject *params) {
     VixHandle job;
     VixError error;
     int op;
@@ -222,7 +228,7 @@ PyObject * PyVixVM_Reset(PyVixVM *self, PyObject *params) {
     Py_RETURN_NONE;
 }
 
-PyObject * PyVixVM_WaitForTools(PyVixVM *self, PyObject *params) {
+static PyObject * PyVixVM_WaitForTools(PyVixVM *self, PyObject *params) {
     VixHandle job;
     VixError error;
     int timeout;
@@ -256,7 +262,7 @@ PyObject * PyVixVM_WaitForTools(PyVixVM *self, PyObject *params) {
     Py_RETURN_NONE;
 }
 
-PyObject * PyVixVM_Login(PyVixVM *self, PyObject *params) {
+static PyObject * PyVixVM_Login(PyVixVM *self, PyObject *params) {
     VixHandle job;
     VixError error;
     char *user;
@@ -296,7 +302,7 @@ PyObject * PyVixVM_Login(PyVixVM *self, PyObject *params) {
     Py_RETURN_NONE;
 }
 
-PyObject * PyVixVM_Logout(PyVixVM *self) {
+static PyObject * PyVixVM_Logout(PyVixVM *self) {
     VixHandle job;
     VixError error;
 
@@ -315,7 +321,7 @@ PyObject * PyVixVM_Logout(PyVixVM *self) {
     Py_RETURN_NONE;
 }
 
-PyObject * PyVixVM_Run(PyVixVM *self, PyObject *params) {
+static PyObject * PyVixVM_Run(PyVixVM *self, PyObject *params) {
     VixHandle job;
     VixRunProgramOptions opts;
     VixError error;
@@ -363,7 +369,7 @@ PyObject * PyVixVM_Run(PyVixVM *self, PyObject *params) {
     Py_RETURN_NONE;
 }
 
-PyObject * PyVixVM_TaskList(PyVixVM *self) {
+static PyObject * PyVixVM_TaskList(PyVixVM *self) {
     PyObject *list;
     PyObject *item;
     //PyObject *value;
@@ -430,7 +436,7 @@ PyObject * PyVixVM_TaskList(PyVixVM *self) {
     return list;
 }
 
-PyObject * PyVixVM_IsRunning(PyVixVM *self) {
+static PyObject * PyVixVM_IsRunning(PyVixVM *self) {
     VixError error;
     //VixHandle myVM = VIX_INVALID_HANDLE;
     VixToolsState powerState = 0;
