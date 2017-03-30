@@ -9,8 +9,8 @@ static PyObject * PyVixHost_Registered ( PyVixHost * self );
 static PyObject * PyVixHost_Register   ( PyVixHost * self , PyObject * path );
 static PyObject * PyVixHost_Unregister ( PyVixHost * self , PyObject * path );
 static PyObject * PyVixHost_Open       ( PyVixHost * self , PyObject * path );
+static PyObject * PyVixHost_Property   ( PyVixHost * self , PyObject * prop );
 
-static void VixDiscoveryProc(VixHandle hJob, VixEventType evtType, VixHandle evtInfo, void *data);
 
 static PyMethodDef PyVixHost_methods[] = {
     {
@@ -38,9 +38,14 @@ static PyMethodDef PyVixHost_methods[] = {
         "open(vmxpath) -> pyvix.vm\n"
         "  open a vmx and return a VM object"
     },{
+        "property",   (PyCFunction)PyVixHost_Property,   METH_O,
+        "property(property_id) -> value\n"
+        "  read a property value"
+    },{
         NULL
     }
 };
+
 
 PyTypeObject PyVixHost_Type = {
     PyVarObject_HEAD_INIT(0, 0)
@@ -89,6 +94,7 @@ static int PyVixHost_Type_init(PyVixHost *self, PyObject *args, PyObject *kwds) 
     return 0;
 }
 
+
 static void PyVixHost_Type_dealloc(PyVixHost *self) {
     if(VIX_INVALID_HANDLE != self->host) {
         VixHost_Disconnect(self->host);
@@ -98,12 +104,14 @@ static void PyVixHost_Type_dealloc(PyVixHost *self) {
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
+
 static PyObject * PyVixHost_Disconnect(PyVixHost *self) {
     VixHost_Disconnect(self->host);
     self->host = VIX_INVALID_HANDLE;
 
     Py_RETURN_NONE;
 }
+
 
 static PyObject * PyVixHost_Running(PyVixHost *self) {
     PyObject *list;
@@ -125,17 +133,18 @@ static PyObject * PyVixHost_Running(PyVixHost *self) {
         list
         );
 
-    //Py_BEGIN_ALLOW_THREADS
+    Py_BEGIN_ALLOW_THREADS
     error = VixJob_Wait(job, VIX_PROPERTY_NONE);
-    //Py_END_ALLOW_THREADS
+    Py_END_ALLOW_THREADS
     if(VIX_OK != error) {
-        // Handle the error...
         Py_DECREF(list);
+        PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
         return NULL;
     }
 
     return list;
 }
+
 
 static PyObject * PyVixHost_Registered(PyVixHost *self) {
     PyObject *list;
@@ -166,6 +175,7 @@ static PyObject * PyVixHost_Registered(PyVixHost *self) {
 
     return list;
 }
+
 
 static PyObject * PyVixHost_Register(PyVixHost *self, PyObject *path) {
     VixHandle job;
@@ -204,6 +214,7 @@ static PyObject * PyVixHost_Register(PyVixHost *self, PyObject *path) {
     Py_RETURN_NONE;
 }
 
+
 static PyObject * PyVixHost_Unregister(PyVixHost *self, PyObject *path) {
     VixHandle job;
     VixError error;
@@ -240,6 +251,7 @@ static PyObject * PyVixHost_Unregister(PyVixHost *self, PyObject *path) {
 
     Py_RETURN_NONE;
 }
+
 
 static PyObject * PyVixHost_Open(PyVixHost *self, PyObject *path) {
     PyVixVM *pyvixvm;
@@ -295,26 +307,7 @@ static PyObject * PyVixHost_Open(PyVixHost *self, PyObject *path) {
     return (PyObject *)pyvixvm;
 }
 
-static void VixDiscoveryProc(VixHandle hJob, VixEventType evtType, VixHandle evtInfo, void *data) {
-    PyObject *list;
-    PyObject *item;
-    VixError error;
-    char *path;
 
-    // Check callback event; ignore progress reports.
-    if(VIX_EVENTTYPE_FIND_ITEM != evtType) {
-        return;
-    }
-
-    list = (PyObject *)data;
-    path = NULL;
-
-    error = Vix_GetProperties(evtInfo, VIX_PROPERTY_FOUND_ITEM_LOCATION, &path, VIX_PROPERTY_NONE);
-
-    if(VIX_SUCCEEDED(error)) {
-        item = PyUnicode_FromString(path);
-        PyList_Append(list, item);
-        Py_DECREF(item);
-        Vix_FreeBuffer(path);
-    }
+static PyObject * PyVixHost_Property(PyVixHost *self, PyObject *prop) {
+    return _PyVix_GetProperty(self->host, prop);
 }

@@ -14,17 +14,17 @@
 
 extern PyObject *PyVix_Error;
 
-// ****************************************************************************
 // Init Function
-// ****************************************************************************
 
 PyMODINIT_FUNC PyInit_pyvix(void);
 
 PyObject * PyVix_Connect( PyObject *self , PyObject *pyoParams );
 
-// ****************************************************************************
-// Host Type
-// ****************************************************************************
+void VixDiscoveryProc(VixHandle hJob, VixEventType evtType, VixHandle evtInfo, void *data);
+PyObject * _PyVix_GetProperty(VixHandle handle, PyObject *prop);
+
+
+// Python Types
 
 typedef struct {
     PyObject_HEAD
@@ -32,10 +32,6 @@ typedef struct {
 } PyVixHost;
 
 extern PyTypeObject PyVixHost_Type;
-
-// ****************************************************************************
-// VM Type
-// ****************************************************************************
 
 typedef struct {
     PyObject_HEAD

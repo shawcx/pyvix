@@ -8,11 +8,11 @@ static PyObject * PyVixVM_PowerOn      ( PyVixVM * self , PyObject * params );
 static PyObject * PyVixVM_PowerOff     ( PyVixVM * self , PyObject * params );
 static PyObject * PyVixVM_Reset        ( PyVixVM * self , PyObject * params );
 static PyObject * PyVixVM_WaitForTools ( PyVixVM * self , PyObject * params );
-static PyObject * PyVixVM_IsRunning    ( PyVixVM * self );
 static PyObject * PyVixVM_Login        ( PyVixVM * self , PyObject * params );
 static PyObject * PyVixVM_Logout       ( PyVixVM * self );
 static PyObject * PyVixVM_Run          ( PyVixVM * self , PyObject * params );
 static PyObject * PyVixVM_TaskList     ( PyVixVM * self );
+static PyObject * PyVixVM_Property     ( PyVixVM * self, PyObject * prop );
 
 
 static PyMethodDef PyVixVM_methods[] = {
@@ -21,12 +21,8 @@ static PyMethodDef PyVixVM_methods[] = {
         "close() -> None\n"
         "  close handle to VM"
     },{
-        "isrunning",    (PyCFunction)PyVixVM_IsRunning,    METH_NOARGS,
-        "isrunning() -> bool\n"
-        "  is the VM running?"
-    },{
         "waitfortools", (PyCFunction)PyVixVM_WaitForTools, METH_VARARGS,
-        "waitfortools() -> None\n"
+        "waitfortools([seconds]) -> None\n"
         "  wait for VM tools to start"
     },{
         "poweron",      (PyCFunction)PyVixVM_PowerOn,      METH_VARARGS,
@@ -56,6 +52,10 @@ static PyMethodDef PyVixVM_methods[] = {
         "tasklist",     (PyCFunction)PyVixVM_TaskList,     METH_NOARGS,
         "tasklist() -> []\n"
         "  get a tasklist in a VM"
+    },{
+        "property",   (PyCFunction)PyVixVM_Property,       METH_O,
+        "property(property_id) -> value\n"
+        "  read a property value"
     },{
         NULL
     }
@@ -108,6 +108,7 @@ static int PyVixVM_Type_init(PyVixVM *self, PyObject *args, PyObject *kwds) {
     return 0;
 }
 
+
 static void PyVixVM_Type_dealloc(PyVixVM *self) {
     if(VIX_INVALID_HANDLE != self->vm) {
         Vix_ReleaseHandle(self->vm);
@@ -115,6 +116,7 @@ static void PyVixVM_Type_dealloc(PyVixVM *self) {
     }
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
+
 
 static PyObject * PyVixVM_Close(PyVixVM *self) {
     if(VIX_INVALID_HANDLE != self->vm) {
@@ -124,6 +126,7 @@ static PyObject * PyVixVM_Close(PyVixVM *self) {
 
     Py_RETURN_NONE;
 }
+
 
 static PyObject * PyVixVM_PowerOn(PyVixVM *self, PyObject *params) {
     VixHandle job;
@@ -160,6 +163,7 @@ static PyObject * PyVixVM_PowerOn(PyVixVM *self, PyObject *params) {
     Py_RETURN_NONE;
 }
 
+
 static PyObject * PyVixVM_PowerOff(PyVixVM *self, PyObject *params) {
     VixHandle job;
     VixError error;
@@ -193,6 +197,7 @@ static PyObject * PyVixVM_PowerOff(PyVixVM *self, PyObject *params) {
 
     Py_RETURN_NONE;
 }
+
 
 static PyObject * PyVixVM_Reset(PyVixVM *self, PyObject *params) {
     VixHandle job;
@@ -228,13 +233,14 @@ static PyObject * PyVixVM_Reset(PyVixVM *self, PyObject *params) {
     Py_RETURN_NONE;
 }
 
+
 static PyObject * PyVixVM_WaitForTools(PyVixVM *self, PyObject *params) {
     VixHandle job;
     VixError error;
     int timeout;
     int ok;
 
-    timeout = 10;
+    timeout = 5;
 
     ok = PyArg_ParseTuple(params, "|i", &timeout);
     if(FALSE == ok) {
@@ -261,6 +267,7 @@ static PyObject * PyVixVM_WaitForTools(PyVixVM *self, PyObject *params) {
 
     Py_RETURN_NONE;
 }
+
 
 static PyObject * PyVixVM_Login(PyVixVM *self, PyObject *params) {
     VixHandle job;
@@ -302,6 +309,7 @@ static PyObject * PyVixVM_Login(PyVixVM *self, PyObject *params) {
     Py_RETURN_NONE;
 }
 
+
 static PyObject * PyVixVM_Logout(PyVixVM *self) {
     VixHandle job;
     VixError error;
@@ -320,6 +328,7 @@ static PyObject * PyVixVM_Logout(PyVixVM *self) {
 
     Py_RETURN_NONE;
 }
+
 
 static PyObject * PyVixVM_Run(PyVixVM *self, PyObject *params) {
     VixHandle job;
@@ -369,6 +378,7 @@ static PyObject * PyVixVM_Run(PyVixVM *self, PyObject *params) {
     Py_RETURN_NONE;
 }
 
+
 static PyObject * PyVixVM_TaskList(PyVixVM *self) {
     PyObject *list;
     PyObject *item;
@@ -397,7 +407,6 @@ static PyObject * PyVixVM_TaskList(PyVixVM *self) {
     list = PyList_New(0);
 
     len = VixJob_GetNumProperties(job, VIX_PROPERTY_JOB_RESULT_ITEM_NAME);
-    //printf("Length: %d\n", len);
     for(idx = 0; idx < len; ++idx) {
         char *procname;
         char *cmdline;
@@ -436,21 +445,7 @@ static PyObject * PyVixVM_TaskList(PyVixVM *self) {
     return list;
 }
 
-static PyObject * PyVixVM_IsRunning(PyVixVM *self) {
-    VixError error;
-    //VixHandle myVM = VIX_INVALID_HANDLE;
-    VixToolsState powerState = 0;
 
-    error = Vix_GetProperties(
-        self->vm,
-        VIX_PROPERTY_VM_IS_RUNNING,
-        &powerState,
-        VIX_PROPERTY_NONE
-        );
-
-    if (VIX_OK != error) {
-      // Handle the error...
-    }
-
-    Py_RETURN_TRUE;
+static PyObject * PyVixVM_Property(PyVixVM *self, PyObject *prop) {
+    return _PyVix_GetProperty(self->vm, prop);
 }

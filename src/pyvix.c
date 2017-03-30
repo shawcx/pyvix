@@ -85,7 +85,6 @@ PyMODINIT_FUNC PyInit_pyvix() {
     PyModule_AddIntConstant(mod, "INSTALLTOOLS_RETURN_IMMEDIATELY",                 VIX_INSTALLTOOLS_RETURN_IMMEDIATELY                );
     PyModule_AddIntConstant(mod, "VMDELETE_DISK_FILES",                             VIX_VMDELETE_DISK_FILES                            );
 
-    PyModule_AddIntConstant(mod, "PROPERTY_NONE",                                   VIX_PROPERTY_NONE                                  );
     PyModule_AddIntConstant(mod, "PROPERTY_META_DATA_CONTAINER",                    VIX_PROPERTY_META_DATA_CONTAINER                   );
     PyModule_AddIntConstant(mod, "PROPERTY_HOST_HOSTTYPE",                          VIX_PROPERTY_HOST_HOSTTYPE                         );
     PyModule_AddIntConstant(mod, "PROPERTY_HOST_API_VERSION",                       VIX_PROPERTY_HOST_API_VERSION                      );
@@ -142,6 +141,7 @@ PyMODINIT_FUNC PyInit_pyvix() {
 
     return mod;
 }
+
 
 PyObject * PyVix_Connect(PyObject *self, PyObject *params) {
     PyVixHost *pyvixhost;
@@ -208,4 +208,125 @@ PyObject * PyVix_Connect(PyObject *self, PyObject *params) {
     pyvixhost->host = handle;
 
     return (PyObject *)pyvixhost;
+}
+
+
+void VixDiscoveryProc(VixHandle hJob, VixEventType evtType, VixHandle evtInfo, void *data) {
+    PyObject *list;
+    PyObject *item;
+    VixError error;
+    char *path;
+
+    // Check callback event; ignore progress reports.
+    if(VIX_EVENTTYPE_FIND_ITEM != evtType) {
+        return;
+    }
+
+    list = (PyObject *)data;
+    path = NULL;
+
+    error = Vix_GetProperties(evtInfo, VIX_PROPERTY_FOUND_ITEM_LOCATION, &path, VIX_PROPERTY_NONE);
+
+    if(VIX_SUCCEEDED(error)) {
+        item = PyUnicode_FromString(path);
+        PyList_Append(list, item);
+        Py_DECREF(item);
+        Vix_FreeBuffer(path);
+    }
+}
+
+
+PyObject * _PyVix_GetProperty(VixHandle handle, PyObject *prop) {
+    PyObject *retval = NULL;
+    VixPropertyType property_type = VIX_PROPERTYTYPE_ANY;
+    long property_value;
+    VixError error;
+
+    property_value = PyLong_AsLong(prop);
+
+    if(VIX_INVALID_HANDLE == handle) {
+        PyErr_SetString(PyVix_Error, "Invalid handle");
+        return NULL;
+    }
+
+    // Check the property type:
+    error = Vix_GetPropertyType(
+        handle,
+        property_value,
+        &property_type
+        );
+
+    if (VIX_OK != error) {
+        PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
+        return NULL;
+    }
+
+    switch(property_type) {
+    case VIX_PROPERTYTYPE_INTEGER: {
+            int vix_integer = 0;
+            error = Vix_GetProperties(
+                handle,
+                property_value,
+                &vix_integer,
+                VIX_PROPERTY_NONE);
+            if(VIX_OK != error) {
+                PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
+                return NULL;
+            }
+            retval = PyLong_FromLong(vix_integer);
+        }
+        break;
+    case VIX_PROPERTYTYPE_STRING: {
+            char *vix_string = NULL;
+            error = Vix_GetProperties(
+                handle,
+                property_value,
+                &vix_string,
+                VIX_PROPERTY_NONE);
+            if(VIX_OK != error) {
+                PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
+                return NULL;
+            }
+            retval = PyUnicode_FromString(vix_string);
+            Vix_FreeBuffer(vix_string);
+        }
+        break;
+    case VIX_PROPERTYTYPE_BOOL: {
+            Bool vix_bool = NULL;
+            error = Vix_GetProperties(
+                handle,
+                property_value,
+                &vix_bool,
+                VIX_PROPERTY_NONE);
+            if(VIX_OK != error) {
+                PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
+                return NULL;
+            }
+            retval = IsBool(vix_bool) ? Py_True : Py_False;
+            Py_INCREF(retval);
+        }
+        break;
+    case VIX_PROPERTYTYPE_HANDLE:
+        PyErr_SetString(PyVix_Error, "Property not supported yet");
+        break;
+    case VIX_PROPERTYTYPE_INT64: {
+            int64 vix_int64 = NULL;
+            error = Vix_GetProperties(
+                handle,
+                property_value,
+                &vix_int64,
+                VIX_PROPERTY_NONE);
+            if(VIX_OK != error) {
+                PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
+                return NULL;
+            }
+            retval = PyLong_FromLong(vix_int64);
+        }
+        break;
+    case VIX_PROPERTYTYPE_BLOB:
+        PyErr_SetString(PyVix_Error, "Property not supported yet");
+        break;
+    }
+
+    return retval;
 }
