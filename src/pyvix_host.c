@@ -159,8 +159,8 @@ static PyObject * PyVixHost_Registered(PyVixHost *self) {
 
     error = VixJob_Wait(job, VIX_PROPERTY_NONE);
     if(VIX_OK != error) {
-        // Handle the error...
         Py_DECREF(list);
+        PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
         return NULL;
     }
 
