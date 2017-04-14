@@ -292,7 +292,7 @@ PyObject * _PyVix_GetProperty(VixHandle handle, PyObject *prop) {
         }
         break;
     case VIX_PROPERTYTYPE_BOOL: {
-            Bool vix_bool = NULL;
+            Bool vix_bool = FALSE;
             error = Vix_GetProperties(
                 handle,
                 property_value,
@@ -310,7 +310,7 @@ PyObject * _PyVix_GetProperty(VixHandle handle, PyObject *prop) {
         PyErr_SetString(PyVix_Error, "Property not supported yet");
         break;
     case VIX_PROPERTYTYPE_INT64: {
-            int64 vix_int64 = NULL;
+            int64 vix_int64 = 0;
             error = Vix_GetProperties(
                 handle,
                 property_value,
