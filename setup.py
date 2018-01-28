@@ -10,10 +10,11 @@ from setuptools.command.build_ext import build_ext as _build_ext
 if 'Windows' == platform.system():
     if 'AMD64' == platform.machine():
         vixpath = os.path.join(os.getenv('PROGRAMFILES(x86)'), 'VMware\\VMware VIX')
-        libs = ['Vix64AllProducts','kernel32','user32','advapi32','ole32','oleaut32','ws2_32','shell32']
+        #vix2path = os.path.join(os.getenv('PROGRAMFILES(x86)'), 'VMware\\VMware VIX\\Workstation-12.0.0\\64bit')
+        libs = ['Vix64AllProductsDyn','kernel32','user32','advapi32','ole32','oleaut32','ws2_32','shell32']
     else:
         vixpath = os.path.join(os.getenv('PROGRAMFILES'), 'VMware\\VMware VIX')
-        libs = ['VixAllProducts','kernel32','user32','advapi32','ole32','oleaut32','ws2_32','shell32']
+        libs = ['VixAllProductsDyn','kernel32','user32','advapi32','ole32','oleaut32','ws2_32','shell32']
 
     defines = [('WIN32', None)]
     include_dirs = [vixpath]
