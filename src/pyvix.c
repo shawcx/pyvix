@@ -302,7 +302,12 @@ PyObject * _PyVix_GetProperty(VixHandle handle, PyObject *prop) {
                 PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
                 return NULL;
             }
+// IsBool has been removed from updated VIX API
+#ifdef IS_BOOL
+            retval = IS_BOOL(vix_bool) ? Py_True : Py_False;
+#else
             retval = IsBool(vix_bool) ? Py_True : Py_False;
+#endif
             Py_INCREF(retval);
         }
         break;
