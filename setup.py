@@ -10,7 +10,6 @@ from setuptools.command.build_ext import build_ext as _build_ext
 if 'Windows' == platform.system():
     if 'AMD64' == platform.machine():
         vixpath = os.path.join(os.getenv('PROGRAMFILES(x86)'), 'VMware\\VMware VIX')
-        #vix2path = os.path.join(os.getenv('PROGRAMFILES(x86)'), 'VMware\\VMware VIX\\Workstation-12.0.0\\64bit')
         libs = ['Vix64AllProductsDyn','kernel32','user32','advapi32','ole32','oleaut32','ws2_32','shell32']
     else:
         vixpath = os.path.join(os.getenv('PROGRAMFILES'), 'VMware\\VMware VIX')
@@ -48,7 +47,7 @@ setuptools.setup(
     name             = 'pyvix',
     author           = 'Matthew Oertle',
     author_email     = 'moertle@gmail.com',
-    version          = '0.4.1',
+    version          = '0.4.2',
     license          = 'MIT',
     url              = 'https://github.com/moertle/pyvix',
     description      = 'Python bindings for VIX library.',
