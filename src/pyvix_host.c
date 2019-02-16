@@ -1,18 +1,18 @@
 #include "pyvix.h"
 
-static int        PyVixHost_Type_init    ( PyVixHost * self, PyObject * args, PyObject * kwds );
-static void       PyVixHost_Type_dealloc ( PyVixHost * self );
+int        PyVixHost_Type_init    ( PyVixHost * self, PyObject * args, PyObject * kwds );
+void       PyVixHost_Type_dealloc ( PyVixHost * self );
 
-static PyObject * PyVixHost_Disconnect ( PyVixHost * self );
-static PyObject * PyVixHost_Running    ( PyVixHost * self );
-static PyObject * PyVixHost_Registered ( PyVixHost * self );
-static PyObject * PyVixHost_Register   ( PyVixHost * self , PyObject * path );
-static PyObject * PyVixHost_Unregister ( PyVixHost * self , PyObject * path );
-static PyObject * PyVixHost_Open       ( PyVixHost * self , PyObject * path );
-static PyObject * PyVixHost_Property   ( PyVixHost * self , PyObject * prop );
+PyObject * PyVixHost_Disconnect ( PyVixHost * self );
+PyObject * PyVixHost_Running    ( PyVixHost * self );
+PyObject * PyVixHost_Registered ( PyVixHost * self );
+PyObject * PyVixHost_Register   ( PyVixHost * self , PyObject * path );
+PyObject * PyVixHost_Unregister ( PyVixHost * self , PyObject * path );
+PyObject * PyVixHost_Open       ( PyVixHost * self , PyObject * path );
+PyObject * PyVixHost_Property   ( PyVixHost * self , PyObject * prop );
 
 
-static PyMethodDef PyVixHost_methods[] = {
+PyMethodDef PyVixHost_methods[] = {
     {
         "disconnect", (PyCFunction)PyVixHost_Disconnect, METH_NOARGS,
         "disconnect() -> None\n"
@@ -89,13 +89,13 @@ PyTypeObject PyVixHost_Type = {
 };
 
 
-static int PyVixHost_Type_init(PyVixHost *self, PyObject *args, PyObject *kwds) {
+int PyVixHost_Type_init(PyVixHost *self, PyObject *args, PyObject *kwds) {
     self->host = VIX_INVALID_HANDLE;
     return 0;
 }
 
 
-static void PyVixHost_Type_dealloc(PyVixHost *self) {
+void PyVixHost_Type_dealloc(PyVixHost *self) {
     if(VIX_INVALID_HANDLE != self->host) {
         VixHost_Disconnect(self->host);
         self->host = VIX_INVALID_HANDLE;
@@ -105,7 +105,7 @@ static void PyVixHost_Type_dealloc(PyVixHost *self) {
 }
 
 
-static PyObject * PyVixHost_Disconnect(PyVixHost *self) {
+PyObject * PyVixHost_Disconnect(PyVixHost *self) {
     VixHost_Disconnect(self->host);
     self->host = VIX_INVALID_HANDLE;
 
@@ -113,7 +113,7 @@ static PyObject * PyVixHost_Disconnect(PyVixHost *self) {
 }
 
 
-static PyObject * PyVixHost_Running(PyVixHost *self) {
+PyObject * PyVixHost_Running(PyVixHost *self) {
     PyObject *list;
     VixHandle job;
     VixError error;
@@ -133,9 +133,8 @@ static PyObject * PyVixHost_Running(PyVixHost *self) {
         list
         );
 
-    Py_BEGIN_ALLOW_THREADS
     error = VixJob_Wait(job, VIX_PROPERTY_NONE);
-    Py_END_ALLOW_THREADS
+
     if(VIX_OK != error) {
         Py_DECREF(list);
         PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
@@ -146,7 +145,7 @@ static PyObject * PyVixHost_Running(PyVixHost *self) {
 }
 
 
-static PyObject * PyVixHost_Registered(PyVixHost *self) {
+PyObject * PyVixHost_Registered(PyVixHost *self) {
     PyObject *list;
     VixHandle job;
     VixError error;
@@ -167,6 +166,7 @@ static PyObject * PyVixHost_Registered(PyVixHost *self) {
         );
 
     error = VixJob_Wait(job, VIX_PROPERTY_NONE);
+
     if(VIX_OK != error) {
         Py_DECREF(list);
         PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
@@ -177,7 +177,7 @@ static PyObject * PyVixHost_Registered(PyVixHost *self) {
 }
 
 
-static PyObject * PyVixHost_Register(PyVixHost *self, PyObject *path) {
+PyObject * PyVixHost_Register(PyVixHost *self, PyObject *path) {
     VixHandle job;
     VixError error;
     char *vmx;
@@ -215,7 +215,7 @@ static PyObject * PyVixHost_Register(PyVixHost *self, PyObject *path) {
 }
 
 
-static PyObject * PyVixHost_Unregister(PyVixHost *self, PyObject *path) {
+PyObject * PyVixHost_Unregister(PyVixHost *self, PyObject *path) {
     VixHandle job;
     VixError error;
     char *vmx;
@@ -253,7 +253,7 @@ static PyObject * PyVixHost_Unregister(PyVixHost *self, PyObject *path) {
 }
 
 
-static PyObject * PyVixHost_Open(PyVixHost *self, PyObject *path) {
+PyObject * PyVixHost_Open(PyVixHost *self, PyObject *path) {
     PyVixVM *pyvixvm;
     VixHandle vm;
     VixHandle job;
@@ -308,6 +308,6 @@ static PyObject * PyVixHost_Open(PyVixHost *self, PyObject *path) {
 }
 
 
-static PyObject * PyVixHost_Property(PyVixHost *self, PyObject *prop) {
+PyObject * PyVixHost_Property(PyVixHost *self, PyObject *prop) {
     return _PyVix_GetProperty(self->host, prop);
 }

@@ -2,7 +2,7 @@
 
 PyObject *PyVix_Error;
 
-static PyMethodDef PyVix_methods[] = {
+PyMethodDef PyVix_methods[] = {
     {
         "connect", PyVix_Connect, METH_VARARGS,
         "connect([host, port, user, password, serviceprovider]) -> pyvix.host\n"
@@ -12,7 +12,7 @@ static PyMethodDef PyVix_methods[] = {
     }
 };
 
-static PyModuleDef PyVIX_module = {
+PyModuleDef PyVIX_module = {
     PyModuleDef_HEAD_INIT,
     "pyvix",
     DOC_MOD,
@@ -145,23 +145,16 @@ PyMODINIT_FUNC PyInit_pyvix() {
 
 PyObject * PyVix_Connect(PyObject *self, PyObject *params) {
     PyVixHost *pyvixhost;
-
-    VixHandle job;
-    VixHandle handle;
-    VixServiceProvider sp;
+    VixHandle handle = VIX_INVALID_HANDLE;
+    VixHandle job    = VIX_INVALID_HANDLE;
     VixError error;
-
-    char *host;
-    char *user;
-    char *passwd;
-    int port;
     int ok;
 
-    host = NULL;
-    user = NULL;
-    passwd = NULL;
-    port = 0;
-    sp = VIX_SERVICEPROVIDER_DEFAULT;
+    char *host   = NULL;
+    int   port   = 0;
+    char *user   = NULL;
+    char *passwd = NULL;
+    VixServiceProvider sp = VIX_SERVICEPROVIDER_DEFAULT;
 
     ok = PyArg_ParseTuple(params, "|sissi", &host, &port, &user, &passwd, &sp);
     if(FALSE == ok) {
@@ -191,12 +184,12 @@ PyObject * PyVix_Connect(PyObject *self, PyObject *params) {
             );
     Py_END_ALLOW_THREADS
 
-    Vix_ReleaseHandle(job);
-
     if(VIX_FAILED(error)) {
         PyErr_SetString(PyVix_Error, "Could not connect");
         return NULL;
     }
+
+    Vix_ReleaseHandle(job);
 
     // allocate a pyvixhost object
     pyvixhost = (PyVixHost *)PyObject_CallObject((PyObject *)&PyVixHost_Type, NULL);
