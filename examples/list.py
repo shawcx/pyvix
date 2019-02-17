@@ -7,7 +7,7 @@ import logging
 try:
     import pyvix
 except ImportError:
-    sys.stderr.write('Missing Pyvix module\n')
+    sys.stderr.write('Missing pyvix module\n')
     sys.exit(-1)
 
 print('Connecting...', end=' ')
@@ -77,3 +77,4 @@ if len(sys.argv) > 1:
     vm.close()
 
 host.disconnect()
+
