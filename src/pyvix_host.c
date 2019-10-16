@@ -207,7 +207,7 @@ PyObject * PyVixHost_Register(PyVixHost *self, PyObject *path) {
     Vix_ReleaseHandle(job);
 
     if(VIX_FAILED(error)) {
-        PyErr_SetString(PyVix_Error, "Could not register VM");
+        PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
         return NULL;
     }
 
@@ -245,7 +245,7 @@ PyObject * PyVixHost_Unregister(PyVixHost *self, PyObject *path) {
     Vix_ReleaseHandle(job);
 
     if(VIX_FAILED(error)) {
-        PyErr_SetString(PyVix_Error, "Could not register VM");
+        PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
         return NULL;
     }
 
@@ -291,7 +291,7 @@ PyObject * PyVixHost_Open(PyVixHost *self, PyObject *path) {
     Vix_ReleaseHandle(job);
 
     if(VIX_FAILED(error)) {
-        PyErr_SetString(PyVix_Error, "Could not open VM");
+        PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
         return NULL;
     }
 

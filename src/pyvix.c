@@ -185,7 +185,7 @@ PyObject * PyVix_Connect(PyObject *self, PyObject *params) {
     Py_END_ALLOW_THREADS
 
     if(VIX_FAILED(error)) {
-        PyErr_SetString(PyVix_Error, "Could not connect");
+        PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
         return NULL;
     }
 

@@ -156,7 +156,7 @@ PyObject * PyVixVM_PowerOn(PyVixVM *self, PyObject *params) {
     Vix_ReleaseHandle(job);
 
     if(VIX_FAILED(error)) {
-        PyErr_SetString(PyVix_Error, "Could not power on VM");
+        PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
         return NULL;
     }
 
@@ -191,7 +191,7 @@ PyObject * PyVixVM_PowerOff(PyVixVM *self, PyObject *params) {
     Vix_ReleaseHandle(job);
 
     if(VIX_FAILED(error)) {
-        PyErr_SetString(PyVix_Error, "Could not power off VM");
+        PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
         return NULL;
     }
 
@@ -226,7 +226,7 @@ PyObject * PyVixVM_Reset(PyVixVM *self, PyObject *params) {
     Vix_ReleaseHandle(job);
 
     if(VIX_FAILED(error)) {
-        PyErr_SetString(PyVix_Error, "Could not reset VM");
+        PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
         return NULL;
     }
 
@@ -261,7 +261,7 @@ PyObject * PyVixVM_WaitForTools(PyVixVM *self, PyObject *params) {
     Vix_ReleaseHandle(job);
 
     if(VIX_FAILED(error)) {
-        PyErr_SetString(PyVix_Error, "Could not wait for tools");
+        PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
         return NULL;
     }
 
@@ -302,7 +302,7 @@ PyObject * PyVixVM_Login(PyVixVM *self, PyObject *params) {
     Vix_ReleaseHandle(job);
 
     if(VIX_FAILED(error)) {
-        PyErr_SetString(PyVix_Error, "Could not login");
+        PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
         return NULL;
     }
 
@@ -322,7 +322,7 @@ PyObject * PyVixVM_Logout(PyVixVM *self) {
 
     error = VixJob_Wait(job, VIX_PROPERTY_NONE);
     if(VIX_FAILED(error)) {
-        PyErr_SetString(PyVix_Error, "Could not logout");
+        PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
         return NULL;
     }
 
@@ -371,7 +371,7 @@ PyObject * PyVixVM_Run(PyVixVM *self, PyObject *params) {
     Vix_ReleaseHandle(job);
 
     if(VIX_FAILED(error)) {
-        PyErr_SetString(PyVix_Error, "Could not run program");
+        PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
         return NULL;
     }
 
@@ -400,7 +400,7 @@ PyObject * PyVixVM_TaskList(PyVixVM *self) {
     Py_END_ALLOW_THREADS
 
     if(VIX_FAILED(error)) {
-        PyErr_SetString(PyVix_Error, "Could not get task list");
+        PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
         return NULL;
     }
 
