@@ -47,7 +47,7 @@ setuptools.setup(
     name             = 'pyvix',
     author           = 'Matthew Oertle',
     author_email     = 'moertle@gmail.com',
-    version          = '0.4.2',
+    version          = '0.4.3',
     license          = 'MIT',
     url              = 'https://github.com/moertle/pyvix',
     description      = 'Python bindings for VIX library.',
