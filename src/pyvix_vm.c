@@ -63,43 +63,14 @@ PyMethodDef PyVixVM_methods[] = {
 
 PyTypeObject PyVixVM_Type = {
     PyVarObject_HEAD_INIT(0, 0)
-    "pyvix.vm",                       // name
-    sizeof(PyVixVM),                  // basicsize
-    0,                                // itemsize
-    (destructor)PyVixVM_Type_dealloc, // dealloc
-    0,                                // print
-    0,                                // getattr
-    0,                                // setattr
-    0,                                // compare
-    0,                                // repr
-    0,                                // as_number
-    0,                                // as_sequence
-    0,                                // as_mapping
-    0,                                // hash
-    0,                                // call
-    0,                                // str
-    0,                                // getattro
-    0,                                // setattro
-    0,                                // as_buffer
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    "PyVix VM Class",                 // doc
-    0,                                // traverse
-    0,                                // clear
-    0,                                // richcompare
-    0,                                // weaklistoffset
-    0,                                // iter
-    0,                                // iternext
-    PyVixVM_methods,                  // methods
-    0,                                // members
-    0,                                // getset
-    0,                                // base
-    0,                                // dict
-    0,                                // descr_get
-    0,                                // descr_set
-    0,                                // dictoffset
-    (initproc)PyVixVM_Type_init,      // init
-    0,                                // alloc
-    PyType_GenericNew,                // new
+    .tp_name      = "pyvix.vm",
+    .tp_basicsize = sizeof(PyVixVM),
+    .tp_dealloc   = (destructor)PyVixVM_Type_dealloc,
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc       = "PyVix VM Class",
+    .tp_methods   = PyVixVM_methods,
+    .tp_init      = (initproc)PyVixVM_Type_init,
+    .tp_new       = PyType_GenericNew,
 };
 
 
