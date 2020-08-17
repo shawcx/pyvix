@@ -154,7 +154,7 @@ PyObject * PyVix_Connect(PyObject *self, PyObject *params) {
     int   port   = 0;
     char *user   = NULL;
     char *passwd = NULL;
-    VixServiceProvider sp = VIX_SERVICEPROVIDER_DEFAULT;
+    VixServiceProvider sp = VIX_SERVICEPROVIDER_VMWARE_WORKSTATION;
 
     ok = PyArg_ParseTuple(params, "|sissi", &host, &port, &user, &passwd, &sp);
     if(FALSE == ok) {
