@@ -151,10 +151,8 @@ PyObject * PyVixHost_Registered(PyVixHost *self) {
 PyObject * PyVixHost_Register(PyVixHost *self, PyObject *path) {
     VixHandle job;
     VixError error;
-    char *vmx;
+    const char *vmx = NULL;
     int ok;
-
-    vmx = NULL;
 
     ok = PyUnicode_Check(path);
     if(FALSE == ok) {
@@ -189,10 +187,8 @@ PyObject * PyVixHost_Register(PyVixHost *self, PyObject *path) {
 PyObject * PyVixHost_Unregister(PyVixHost *self, PyObject *path) {
     VixHandle job;
     VixError error;
-    char *vmx;
+    const char *vmx = NULL;
     int ok;
-
-    vmx = NULL;
 
     ok = PyUnicode_Check(path);
     if(FALSE == ok) {
@@ -229,10 +225,8 @@ PyObject * PyVixHost_Open(PyVixHost *self, PyObject *path) {
     VixHandle vm;
     VixHandle job;
     VixError error;
-    char *vmx;
+    const char *vmx = NULL;
     int ok;
-
-    vmx = NULL;
 
     if(VIX_INVALID_HANDLE == self->host) {
         Py_RETURN_NONE;
