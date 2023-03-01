@@ -45,11 +45,11 @@ class build_ext(_build_ext):
 setuptools.setup(
     cmdclass = {'build_ext': build_ext},
     name             = 'pyvix',
-    author           = 'Matthew Oertle',
-    author_email     = 'moertle@gmail.com',
+    author           = 'Matthew Shaw',
+    author_email     = 'mshaw.cx@gmail.com',
     version          = '0.4.3',
     license          = 'MIT',
-    url              = 'https://github.com/moertle/pyvix',
+    url              = 'https://github.com/shawcx/pyvix',
     description      = 'Python bindings for VIX library.',
     long_description = open('README.rst').read(),
     ext_modules = [
