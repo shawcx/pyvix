@@ -1,3 +1,5 @@
 /build
 /dist
-/pyvix.egg-info
+/deb_dist
+/*.egg-info
+/*.tar.gz
