@@ -95,22 +95,27 @@ PyObject * PyVixHost_Running(PyVixHost *self) {
         return list;
     }
 
-    job = VixHost_FindItems(
-        self->host,
-        VIX_FIND_RUNNING_VMS,
-        VIX_INVALID_HANDLE,
-        -1,
-        VixDiscoveryProc,
-        list
-        );
+    Py_BEGIN_ALLOW_THREADS
+        job = VixHost_FindItems(
+            self->host,
+            VIX_FIND_RUNNING_VMS,
+            VIX_INVALID_HANDLE,
+            -1,
+            VixDiscoveryProc,
+            list
+            );
 
-    error = VixJob_Wait(job, VIX_PROPERTY_NONE);
+        error = VixJob_Wait(job, VIX_PROPERTY_NONE);
+
+        Vix_ReleaseHandle(job);
+    Py_END_ALLOW_THREADS
 
     if(VIX_OK != error) {
         Py_DECREF(list);
         PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
         return NULL;
     }
+
 
     return list;
 }
@@ -127,16 +132,20 @@ PyObject * PyVixHost_Registered(PyVixHost *self) {
         return list;
     }
 
-    job = VixHost_FindItems(
-        self->host,
-        VIX_FIND_REGISTERED_VMS,
-        VIX_INVALID_HANDLE,
-        -1,
-        VixDiscoveryProc,
-        list
-        );
+    Py_BEGIN_ALLOW_THREADS
+        job = VixHost_FindItems(
+            self->host,
+            VIX_FIND_REGISTERED_VMS,
+            VIX_INVALID_HANDLE,
+            -1,
+            VixDiscoveryProc,
+            list
+            );
 
-    error = VixJob_Wait(job, VIX_PROPERTY_NONE);
+        error = VixJob_Wait(job, VIX_PROPERTY_NONE);
+
+        Vix_ReleaseHandle(job);
+    Py_END_ALLOW_THREADS
 
     if(VIX_OK != error) {
         Py_DECREF(list);
@@ -162,18 +171,18 @@ PyObject * PyVixHost_Register(PyVixHost *self, PyObject *path) {
 
     vmx = PyUnicode_AsUTF8(path);
 
-    job = VixHost_RegisterVM(
-        self->host,
-        vmx,
-        NULL,
-        NULL
-        );
-
     Py_BEGIN_ALLOW_THREADS
-        error = VixJob_Wait(job, VIX_PROPERTY_NONE);
-    Py_END_ALLOW_THREADS
+        job = VixHost_RegisterVM(
+            self->host,
+            vmx,
+            NULL,
+            NULL
+            );
 
-    Vix_ReleaseHandle(job);
+        error = VixJob_Wait(job, VIX_PROPERTY_NONE);
+
+        Vix_ReleaseHandle(job);
+    Py_END_ALLOW_THREADS
 
     if(VIX_FAILED(error)) {
         PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
@@ -240,20 +249,20 @@ PyObject * PyVixHost_Open(PyVixHost *self, PyObject *path) {
 
     vmx = PyUnicode_AsUTF8(path);
 
-    job = VixHost_OpenVM(
-        self->host,
-        vmx,
-        VIX_VMOPEN_NORMAL,
-        VIX_INVALID_HANDLE,
-        NULL,
-        NULL
-        );
-
     Py_BEGIN_ALLOW_THREADS
-        error = VixJob_Wait(job, VIX_PROPERTY_JOB_RESULT_HANDLE, &vm, VIX_PROPERTY_NONE);
-    Py_END_ALLOW_THREADS
+        job = VixHost_OpenVM(
+            self->host,
+            vmx,
+            VIX_VMOPEN_NORMAL,
+            VIX_INVALID_HANDLE,
+            NULL,
+            NULL
+            );
 
-    Vix_ReleaseHandle(job);
+        error = VixJob_Wait(job, VIX_PROPERTY_JOB_RESULT_HANDLE, &vm, VIX_PROPERTY_NONE);
+
+        Vix_ReleaseHandle(job);
+    Py_END_ALLOW_THREADS
 
     if(VIX_FAILED(error)) {
         PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));

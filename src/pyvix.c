@@ -154,7 +154,7 @@ PyObject * PyVix_Connect(PyObject *self, PyObject *params) {
     int   port   = 0;
     char *user   = NULL;
     char *passwd = NULL;
-    VixServiceProvider sp = VIX_SERVICEPROVIDER_VMWARE_WORKSTATION;
+    VixServiceProvider sp = VIX_SERVICEPROVIDER_DEFAULT;
 
     ok = PyArg_ParseTuple(params, "|sissi", &host, &port, &user, &passwd, &sp);
     if(FALSE == ok) {
@@ -162,34 +162,34 @@ PyObject * PyVix_Connect(PyObject *self, PyObject *params) {
         return NULL;
     }
 
-    job = VixHost_Connect(
-        VIX_API_VERSION,
-        sp,
-        host,
-        port,
-        user,
-        passwd,
-        0,
-        VIX_INVALID_HANDLE,
-        NULL,
-        NULL
-        );
-
     Py_BEGIN_ALLOW_THREADS
+        job = VixHost_Connect(
+            VIX_API_VERSION,
+            sp,
+            host,
+            port,
+            user,
+            passwd,
+            0,
+            VIX_INVALID_HANDLE,
+            NULL,
+            NULL
+            );
+
         error = VixJob_Wait(
             job,
             VIX_PROPERTY_JOB_RESULT_HANDLE,
             &handle,
             VIX_PROPERTY_NONE
             );
+
+        Vix_ReleaseHandle(job);
     Py_END_ALLOW_THREADS
 
     if(VIX_FAILED(error)) {
         PyErr_SetString(PyVix_Error, Vix_GetErrorText(error, NULL));
         return NULL;
     }
-
-    Vix_ReleaseHandle(job);
 
     // allocate a pyvixhost object
     pyvixhost = (PyVixHost *)PyObject_CallObject((PyObject *)&PyVixHost_Type, NULL);
@@ -205,25 +205,22 @@ PyObject * PyVix_Connect(PyObject *self, PyObject *params) {
 
 
 void VixDiscoveryProc(VixHandle hJob, VixEventType evtType, VixHandle evtInfo, void *data) {
-    PyObject *list;
-    PyObject *item;
-    VixError error;
-    char *path;
-
     // Check callback event; ignore progress reports.
     if(VIX_EVENTTYPE_FIND_ITEM != evtType) {
         return;
     }
 
-    list = (PyObject *)data;
-    path = NULL;
+    PyObject *list = (PyObject *)data;
+    char *path = NULL;
 
-    error = Vix_GetProperties(evtInfo, VIX_PROPERTY_FOUND_ITEM_LOCATION, &path, VIX_PROPERTY_NONE);
+    VixError error = Vix_GetProperties(evtInfo, VIX_PROPERTY_FOUND_ITEM_LOCATION, &path, VIX_PROPERTY_NONE);
 
     if(VIX_SUCCEEDED(error)) {
-        item = PyUnicode_FromString(path);
+        PyGILState_STATE _vixThread = PyGILState_Ensure();
+        PyObject *item = PyUnicode_FromString(path);
         PyList_Append(list, item);
         Py_DECREF(item);
+        PyGILState_Release(_vixThread);
         Vix_FreeBuffer(path);
     }
 }
