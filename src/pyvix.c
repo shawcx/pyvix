@@ -5,7 +5,7 @@ PyObject *PyVix_Error;
 PyMethodDef PyVix_methods[] = {
     {
         "connect", PyVix_Connect, METH_VARARGS,
-        "connect([host, port, user, password, serviceprovider]) -> pyvix.host\n"
+        "connect([host, port, user, password, serviceprovider, options]) -> pyvix.host\n"
         "  Connect to VMware Instance, all parameters are optional"
     },{
         NULL
@@ -43,6 +43,7 @@ PyMODINIT_FUNC PyInit_pyvix() {
     Py_INCREF(&PyVixVM_Type);
 
     PyModule_AddIntConstant(mod, "API_VERSION",                                     VIX_API_VERSION                                    );
+    PyModule_AddIntConstant(mod, "HOSTOPTION_DEFAULT",                              PYVIX_HOSTOPTION_DEFAULT                           );
     PyModule_AddIntConstant(mod, "HOSTOPTION_VERIFY_SSL_CERT",                      VIX_HOSTOPTION_VERIFY_SSL_CERT                     );
     PyModule_AddIntConstant(mod, "SERVICEPROVIDER_DEFAULT",                         VIX_SERVICEPROVIDER_DEFAULT                        );
     PyModule_AddIntConstant(mod, "SERVICEPROVIDER_SERVER",                          VIX_SERVICEPROVIDER_VMWARE_SERVER                  );
@@ -155,8 +156,9 @@ PyObject * PyVix_Connect(PyObject *self, PyObject *params) {
     char *user   = NULL;
     char *passwd = NULL;
     VixServiceProvider sp = VIX_SERVICEPROVIDER_DEFAULT;
+    VixHostOptions options = PYVIX_HOSTOPTION_DEFAULT;
 
-    ok = PyArg_ParseTuple(params, "|sissi", &host, &port, &user, &passwd, &sp);
+    ok = PyArg_ParseTuple(params, "|sissii", &host, &port, &user, &passwd, &sp, &options);
     if(FALSE == ok) {
         PyErr_SetString(PyVix_Error, "Bad arguments");
         return NULL;
@@ -170,7 +172,7 @@ PyObject * PyVix_Connect(PyObject *self, PyObject *params) {
             port,
             user,
             passwd,
-            0,
+            options,
             VIX_INVALID_HANDLE,
             NULL,
             NULL
