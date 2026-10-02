@@ -1,5 +1,6 @@
 /build
 /dist
 /deb_dist
-/*.egg-info
+*.egg-info/
 /*.tar.gz
+*.so

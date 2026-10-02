@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`pyvix` is a single CPython C extension module (no Python sources) that wraps VMware's VIX C API. It is built with `setup.py` and links against the VIX library that ships with VMware Workstation / Fusion / Player.
+`pyvix` is a single CPython C extension module (no Python sources) that wraps VMware's VIX C API. Project metadata, including the version, lives in `pyproject.toml` (setuptools backend). `setup.py` only defines the extension and links it against the VIX library that ships with VMware Workstation / Fusion / Player.
 
 ## Build and run
 
@@ -12,12 +12,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 pip install -e .                       # editable install into the current env
 pip install .                          # regular install
 python3 setup.py build_ext --inplace   # quick rebuild of pyvix.*.so in the repo root
+python -m build                        # sdist + wheel into dist/ (needs the `build` package)
 python3 examples/list.py               # smoke test: connect and list running VMs
 ```
 
-- `pip install -e .` and `build_ext --inplace` both leave `pyvix.cpython-*.so` in the repo root, and `.gitignore` doesn't cover it.
 - There is no test suite, linter, or CI. `examples/list.py` is the only way to exercise the module, and it needs a running VMware product with VMs.
-- `setup.py` and `pyvix.h` aren't dependencies of the extension, so after changing either, run `python3 setup.py build_ext --force`. Otherwise `pip install .` reuses the stale objects in `build/`.
+- `pyvix.h` is listed in the extension's `depends`, so editing it triggers a rebuild, and that's also how it gets into the sdist. Changes to `setup.py` don't trigger one: run `python3 setup.py build_ext --force`, or `pip install .` reuses the stale objects in `build/`.
+- If the `build` package isn't installed, running `python -m build` from the repo root imports the `build/` directory instead and fails with `No module named build.__main__`.
 - `examples/list.py` passes against Fusion 26.0.1 on macOS arm64.
 - The VIX headers and library must be installed. `setup.py` hard-codes their locations per OS:
   - **macOS**: `/Applications/VMware Fusion.app/Contents/Public` (`include/` and `libvixAllProducts.dylib`). The dylib's install name is a bare `libvixAllProducts.dylib`, so a custom `build_ext` runs `install_name_tool` after linking to point the `.so` at the absolute path inside Fusion.
